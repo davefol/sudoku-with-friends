@@ -1,0 +1,70 @@
+.cell {
+	position: absolute;
+	background: #fff;
+	outline: 1px solid #959595;
+	transform: scale3d(1, 1, 1);
+	width: 51px;
+	height: 51px;
+	fill: #000;
+}
+.cell.selected {
+	background: #ffda00;
+}
+
+.cell.prefilled {
+	background: #e6e6e6;
+}
+#board {
+	top: 5px;
+	left: 50%;
+	transform: translate(-50%, 0);
+	position: relative;
+	background: #959595;
+	width: 475px;
+	height: 475px;
+}
+.board_frame {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	outline: 0px solid #000;
+}
+
+.selected .candidate_button {
+	visibility: visible;
+}
+
+.candidate_button.active {
+	visibility: visible;
+	opacity: 1;
+}
+
+
+.filled .candidate_button {
+	visibility: hidden;
+}
+
+
+.candidate_button {
+	position: absolute;
+	transition: opacity 400ms ease;
+	opacity: 0;
+	z-index: 3;
+	visibility: hidden;
+}
+.candidate_button:hover {
+	opacity: 0.4;
+	transition-delay: 0ms;
+}
+
+
+#placed_candidates {
+	fill: #000;
+}
+
+#lobby {
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}

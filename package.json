@@ -1,0 +1,9 @@
+{
+  "name": "sudoku-with-friends",
+  "version": "0.0.1",
+  "description": "Collaborate on the new york times sudoku.",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^2.3.0"
+  }
+}

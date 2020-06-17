@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sudoku</title>
+		<link rel="stylesheet" href="/style.css">
+	</head>
+	<body>
+		<div id="lobby">
+			<button id="create_new_room">Create New Room</button>
+			<button id="join_room">Join Room</button>
+			<input id="room_id_input">
+		</div>
+		<div role="grid" id="board">
+		</div>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="./sudoku.js"></script>
+	</body>
+</html>
