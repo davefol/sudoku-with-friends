@@ -97,7 +97,7 @@ io.on('connection', (socket) => {
 			} 
 			if (typeof data.modify_candidate != 'undefined') {
 				if (data.modify_candidate.remove) {
-					for (let i = 0; i < cell.candidate.length; i++) {
+					for (let i = 0; i < cell.candidates.length; i++) {
 						if (cell.candidates[i] == data.modify_candidate.candidate) {
 							cell.candidates.splice(i, 1);
 							break;
