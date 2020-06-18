@@ -1,10 +1,10 @@
 .cell {
-	position: absolute;
 	background: #fff;
 	outline: 1px solid #959595;
 	transform: scale3d(1, 1, 1);
-	width: 51px;
-	height: 51px;
+	width: 10vmin;
+	height: 10vmin;
+	float: left;
 	fill: #000;
 }
 .cell.selected {
@@ -21,12 +21,13 @@
 
 #board {
 	top: 5px;
-	left: 50%;
-	transform: translate(-50%, 0);
 	position: relative;
 	background: #959595;
-	width: 475px;
-	height: 475px;
+	width: 92vmin;
+	height: 92vmin;
+	margin: auto;
+	visibility: hidden;
+	padding: 1px;
 }
 .board_frame {
 	position: absolute;
@@ -101,4 +102,21 @@
 
 #sdk_input {
 	padding: 24px;
+}
+
+#cell-0-2, #cell-0-5,
+#cell-1-2, #cell-1-5,
+#cell-2-2, #cell-2-5,
+#cell-3-2, #cell-3-5,
+#cell-4-2, #cell-4-5,
+#cell-5-2, #cell-5-5,
+#cell-6-2, #cell-6-5,
+#cell-7-2, #cell-7-5,
+#cell-8-2, #cell-8-5 {
+	margin-right: 1vmin;
+}
+
+#cell-2-0, #cell-2-1, #cell-2-2, #cell-2-3, #cell-2-4, #cell-2-5, #cell-2-6, #cell-2-7, #cell-2-8, 
+#cell-5-0, #cell-5-1, #cell-5-2, #cell-5-3, #cell-5-4, #cell-5-5, #cell-5-6, #cell-5-7, #cell-5-8 {
+	margin-bottom: 1vmin;
 }

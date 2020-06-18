@@ -38,14 +38,6 @@ function Cell(x, y, parent) {
 	this.candidates = [];
 }
 
-Cell.prototype.x_pos = function() {
-	return this.x * 52 + (this.x > 2 ? 4 : 0) + (this.x > 5 ? 4 : 0);
-}
-
-Cell.prototype.y_pos = function() {
-	return this.y * 52 + (this.y > 2 ? 4 : 0) + (this.y > 5 ? 4 : 0);
-}
-
 Cell.prototype.id = function() {
 	return `cell-${this.x}-${this.y}`;
 }
@@ -88,10 +80,10 @@ Cell.prototype.element = function() {
 				svg_candidate_button.classList.add("active");
 			}
 			svg_candidate_button.setAttribute('viewBox', '0 0 200 200');
-			svg_candidate_button.setAttribute("width", "17");
-			svg_candidate_button.setAttribute("height", "17");
-			let x_pos = col * 17;
-			let y_pos = row * 17;
+			svg_candidate_button.setAttribute("width", "3vmin");
+			svg_candidate_button.setAttribute("height", "3vmin");
+			let x_pos = `${col * 3.5}vmin`;
+			let y_pos = `${row * 3.5}vmin`;
 			svg_candidate_button.style['top'] = y_pos;
 			svg_candidate_button.style['left'] = x_pos;
 			
@@ -117,14 +109,12 @@ Cell.prototype.element = function() {
 	cell.appendChild(candidates);
 
 	cell.id = this.id()
-	cell.style['left'] = `${this.x_pos()}px`;
-	cell.style['top'] = `${this.y_pos()}px`;
 	let svg_number = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	svg_number.id = this.svg_id();
 	svg_number.innerHTML = this.inner_svg();
 	svg_number.setAttribute('viewBox', '0 0 200 200');
-	svg_number.setAttribute('height', 50);
-	svg_number.setAttribute('width', 51);
+	svg_number.setAttribute('height', "100%");
+	svg_number.setAttribute('width', "100%");
 	svg_number.setAttribute('position', 'absolute');
 	cell.appendChild(svg_number);
 	let parent = this.parent;
@@ -249,6 +239,8 @@ socket.on('set up board', board => {
 	room_id.innerHTML = "Room ID: " + board.id;
 	document.getElementById("lobby").appendChild( room_id);
 
+	document.getElementById("board").style.visibility = "visible";
+
 	let grid = new Grid(board);
 	grid.render();
 
@@ -295,6 +287,6 @@ socket.on('cant parse sdk', function() {
 
 var frame = document.createElement("div");
 frame.classList.add("board_frame");
-frame.style['outline-width'] = '5px';
+frame.style['outline-width'] = '1vmin';
 frame.id = "board_frame";
 document.getElementById("board").appendChild(frame);
