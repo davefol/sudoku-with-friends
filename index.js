@@ -4,8 +4,14 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var crypto = require("crypto");
+var compression = require('compression');
+var helmet = require('helmet');
+
+var port = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(helmet());
+app.use(compression()); //Compress all routes
 
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
@@ -50,7 +56,6 @@ function Board(sdk_str, id) {
 }
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
 	socket.on('create new room', sdk => {
 		Object.keys(socket.rooms).forEach(room => {
 			if (room != socket.id) {
@@ -132,7 +137,6 @@ io.on('connection', (socket) => {
 	});
 });
 
-http.listen(3000, () => {
-  console.log('listening on *:3000');
+http.listen(port, () => {
 });
 
