@@ -14,6 +14,11 @@
 .cell.prefilled {
 	background: #e6e6e6;
 }
+
+.cell.prefilled.selected {
+	background: #e6c500;
+}
+
 #board {
 	top: 5px;
 	left: 50%;
@@ -67,4 +72,33 @@
 
 #lobby {
 	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+.new-room-container {
+	margin: 8px;
+	float: left;
+}
+
+#create_new_room {
+	display: block;	
+	margin-bottom: 8px;
+	width: 100%;
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+.join-room-container {
+	margin: 8px;
+	float: left;
+}
+
+#room_id_input {
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+#join_room {
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+#sdk_input {
+	padding: 24px;
 }

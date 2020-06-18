@@ -1,8 +1,3 @@
-//TODO: Dynamic sizing
-//TODO: Select cells with arrow keys
-//TODO: Numpad
-//TODO: Join game with link
-
 var socket = io();
 
 // Big numbers for placing answers.
@@ -76,6 +71,8 @@ Cell.prototype.element = function() {
 		cell.classList.add("filled");
 	else
 		cell.classList.add("empty");
+	if (this.prefilled) 
+		cell.classList.add("prefilled");
 
 
 	// render candidate buttons
@@ -147,7 +144,7 @@ function Grid(board) {
 		for (let y = 0; y < 9; y++) {
 			let cell = new Cell(x, y, this);
 			cell.candidates = board.cells[x][y].candidates;
-			cell.filled = board.cells[x][y].filled;
+			cell.prefilled = board.cells[x][y].prefilled;
 			cell.digit = board.cells[x][y].digit;
 			this.cells[x].push(cell);
 			this.dirty_cells.push(cell);
@@ -235,7 +232,7 @@ Grid.prototype.update_cell = function(data) {
 }
 
 document.getElementById("create_new_room").addEventListener('click', function() {
-	socket.emit("create new room", "easy");
+	socket.emit("create new room", document.getElementById("sdk_input").value);
 });
 
 document.getElementById("join_room").addEventListener('click', function() {
@@ -287,6 +284,13 @@ socket.on('room not found', function() {
 	alert("Sorry, that room cannot be found.");
 });
 
+socket.on("room no longer available", function() {
+	alert("Sorry, but the room is no longer available.");
+});
+
+socket.on('cant parse sdk', function() {
+	alert("Cannot parse .sdk text into sudoku board.");
+});
 
 
 var frame = document.createElement("div");

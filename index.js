@@ -11,14 +11,11 @@ app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
 });
 
-var ROOMS = new Map();
-var DIFFICULTY = {
-	easy: new Map(),
-	medium: new Map(),
-	hard: new Map(),
-}
 
-function Board(difficulty, id) {
+var ROOMS = new Map();
+
+
+function Board(sdk_str, id) {
 	this.id = id;
 	this.cells = [];
 	for (let x = 0; x < 9; x++) {
@@ -29,21 +26,32 @@ function Board(difficulty, id) {
 				y: y,
 				candidates: [],
 			};
-			if (DIFFICULTY[difficulty].has({x: x, y: y})) {
-				cell.filled = true;
-				cell.digit = DIFFICULTY[difficulty].get({x: x, y: y});
-			} else {
-				cell.filled = false;
-				cell.digit = 0;
-			}
 			this.cells[x].push(cell);
 		}
 	} 
+	let sanitized = sdk_str.replace(/[^\d.-]/g, '');
+	if (sanitized.length != 81) {
+		this.cells = null;
+		return;
+	}
+	for (let i = 0; i < 81; i++) {
+		let y = Math.floor(i / 9);
+		let x = Math.floor(i % 9);
+		let digit = sanitized.charAt(i);
+		if (digit == '.') {
+			this.cells[x][y].digit = 0;
+			this.cells[x][y].prefilled = false;
+		} else {
+			this.cells[x][y].digit = parseInt(digit);
+			this.cells[x][y].prefilled = true;
+		}
+	}
+
 }
 
 io.on('connection', (socket) => {
   console.log('a user connected');
-	socket.on('create new room', difficulty => {
+	socket.on('create new room', sdk => {
 		Object.keys(socket.rooms).forEach(room => {
 			if (room != socket.id) {
 				socket.leave(room);
@@ -51,8 +59,13 @@ io.on('connection', (socket) => {
 		});
 		let id = crypto.randomBytes(20).toString('hex');
 		socket.join(id);
-		ROOMS.set(id, new Board(difficulty, id));
-		socket.emit('set up board', ROOMS.get(id));
+		let board = new Board(sdk, id);
+		if (board.cells) {
+			ROOMS.set(id, board);
+			socket.emit('set up board', ROOMS.get(id));
+		} else {
+			socket.emit('cant parse sdk');
+		}
 	});
 
 	socket.on('join room', id => {
@@ -76,25 +89,30 @@ io.on('connection', (socket) => {
 				room_id = room;
 			}
 		});
-		let board = ROOMS.get(room_id);
-		let cell = board.cells[data.x][data.y];
-		if (typeof data.digit != 'undefined') {
-			cell.digit = data.digit;
-		} 
-		if (typeof data.modify_candidate != 'undefined') {
-			if (data.modify_candidate.remove) {
-				for (let i = 0; i < cell.candidate.length; i++) {
-					if (cell.candidates[i] == data.modify_candidate.candidate) {
-						cell.candidates.splice(i, 1);
-						break;
+		try {
+			let board = ROOMS.get(room_id);
+			let cell = board.cells[data.x][data.y];
+			if (typeof data.digit != 'undefined') {
+				cell.digit = data.digit;
+			} 
+			if (typeof data.modify_candidate != 'undefined') {
+				if (data.modify_candidate.remove) {
+					for (let i = 0; i < cell.candidate.length; i++) {
+						if (cell.candidates[i] == data.modify_candidate.candidate) {
+							cell.candidates.splice(i, 1);
+							break;
+						}
 					}
+				} else {
+					cell.candidates.push(data.modify_candidate.candidate);
 				}
-			} else {
-				cell.candidates.push(data.modify_candidate.candidate);
 			}
+			ROOMS.set(room_id, board);
+			socket.broadcast.to(room_id).emit('update cell', data);
+		} catch (e) {
+			console.log(`Error in room ${room_id}: ${e}.`);
+			socket.broadcast.to(room_id).emit("room no longer available");
 		}
-		ROOMS.set(room_id, board);
-		socket.broadcast.to(room_id).emit('update cell', data);
 	});
 
 	socket.on('disconnect', function() {
