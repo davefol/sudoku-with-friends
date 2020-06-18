@@ -28,6 +28,42 @@ var SVG_CND_NUMS = [
 	`<path class="su-number" d="M131.712 100.681C131.712 71.8312 118.661 55.8952 97.7793 55.8952C80.1947 55.8952 65.083 69.4957 65.083 88.4541C65.083 105.077 77.035 117.578 95.5812 117.578C107.121 117.578 115.364 112.221 123.057 105.352C121.958 127.47 112.891 144.093 95.0317 144.093C83.4918 144.093 77.3098 136.399 74.15 130.08L66.182 133.789C70.5782 143.131 79.6452 151.511 95.1691 151.511C116.6 151.511 131.712 132.415 131.712 100.681ZM123.057 97.2463C117.425 102.742 108.77 110.16 95.7186 110.16C83.3545 110.16 74.2874 101.23 74.2874 88.3167C74.2874 73.6171 83.7666 63.3137 97.9167 63.3137C110.968 63.3137 122.233 73.8919 123.057 97.2463Z"></path>`,
 ];
 
+let INTERACTIONS = [
+];
+
+// Add 3x3 to interactions
+for (let x = 0; x < 7; x+=3) {
+	for (let y = 0; y < 7; y+=3) {
+		let interaction = new Set();
+		for (let x1 = 0; x1 < 3; x1++) {
+			for (let y1 = 0; y1 < 3; y1++) {
+				interaction.add(JSON.stringify({x: x+x1, y: y+y1}));
+			}
+		}
+		INTERACTIONS.push(interaction);
+	}
+}
+
+// Add row interactions
+for (let x = 0; x < 9; x++) {
+	let interaction = new Set();
+	for (let y = 0; y < 9; y++) {
+		interaction.add(JSON.stringify({x: x, y: y}));
+	}
+	INTERACTIONS.push(interaction);
+}
+
+// add column interactions
+for (let y = 0; y < 9; y++) {
+	let interaction = new Set();
+	for (let x = 0; x < 9; x++) {
+		interaction.add(JSON.stringify({x: x, y: y}));
+	}
+	INTERACTIONS.push(interaction);
+}
+
+
+
 function Cell(x, y, parent) {
 	this.parent = parent;
 	this.selected = false;
@@ -36,6 +72,44 @@ function Cell(x, y, parent) {
 	this.x = x;
 	this.y = y;
 	this.candidates = [];
+	this.conflicts = [];
+}
+
+Cell.prototype.add_conflict = function(cell) {
+	if (!this.conflicts.includes(cell)) {
+		this.conflicts.push(cell);
+	}
+	if (!cell.conflicts.includes(this)) {
+		cell.conflicts.push(this);
+	}
+	document.getElementById(this.id()).classList.add("conflict");
+	document.getElementById(cell.id()).classList.add("conflict");
+}
+
+Cell.prototype.remove_conflict = function(cell) {
+	for (let i = 0; i < this.conflicts.length; i++) {
+		if (this.conflicts[i].x == cell.x && this.conflicts[i].y == cell.y) {
+			this.conflicts.splice(i, 1);
+		}
+	}
+	if (this.conflicts.length == 0) {
+		document.getElementById(this.id()).classList.remove("conflict");
+	}
+
+	for (let i = 0; i < cell.conflicts.length; i++) {
+		if (cell.conflicts[i].x == this.x && cell.conflicts[i].y == this.y) {
+			cell.conflicts.splice(i, 1);
+			if (cell.conflicts.length == 0) {
+				document.getElementById(cell.id()).classList.remove("conflict");
+			}
+		}
+	}
+}
+
+Cell.prototype.remove_all_conflicts = function() {
+	for (let i = this.conflicts.length - 1; i > -1; i--) {
+		this.remove_conflict(this.conflicts[i]);
+	}
 }
 
 Cell.prototype.id = function() {
@@ -66,6 +140,9 @@ Cell.prototype.element = function() {
 	if (this.prefilled) 
 		cell.classList.add("prefilled");
 
+	let conflict = document.createElement("div");
+	conflict.classList.add("conflict-icon");
+	cell.appendChild(conflict);
 
 	// render candidate buttons
 	let candidates = document.createElement("div");
@@ -140,6 +217,27 @@ function Grid(board) {
 			this.dirty_cells.push(cell);
 		}
 	}
+
+	for (let row of this.cells) {
+		for (let cell of row) {
+			for (let interaction of INTERACTIONS) {
+				if (interaction.has(JSON.stringify({x: cell.x, y: cell.y}))) {
+					for (let pos_as_str of interaction) {
+						let pos = JSON.parse(pos_as_str);
+						if (cell.digit != 0 && cell.digit == this.cells[pos.x][pos.y] && !(cell.x == pos.x && cell.y == pos.y)) {
+							if (!cell.conflicts.includes(this.cells[pos.x][pos.y])) {
+								cell.add_conflict(this.cells[pos.x][pos.y]);
+							}
+							if (!this.cells[pos.x][pos.y].includes(cell)) {
+								this.cells[pos.x][pos.y].add_conflict(cell);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	this.selected_cell = this.cells[0][0];
 } 
 
@@ -200,6 +298,20 @@ Grid.prototype.update_cell = function(data) {
 				document.getElementById(cell.id()).classList.add("filled");
 				document.getElementById(cell.id()).classList.remove("empty");
 			}
+
+			cell.remove_all_conflicts();
+			for (let interaction of INTERACTIONS) {
+				if (interaction.has(JSON.stringify({x: cell.x, y: cell.y}))) {
+					for (let pos_as_str of interaction) {
+						let pos = JSON.parse(pos_as_str);
+						if (cell.digit != 0 && cell.digit == this.cells[pos.x][pos.y].digit && !(cell.x == pos.x && cell.y == pos.y)) {
+							cell.add_conflict(this.cells[pos.x][pos.y]);
+						}
+					}
+				}
+			}
+
+
 		}
 	}
 
