@@ -17,6 +17,10 @@ app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/room/:room_id', (req, res) => {
+	res.sendFile(__dirname + '/index.html');
+});
+
 
 var ROOMS = new Map();
 

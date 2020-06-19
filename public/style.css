@@ -9,6 +9,7 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
 
 body {
 	background: #e6e6e6;
+	transition: opacity 650ms ease;
 }
 
 #game {
@@ -17,6 +18,31 @@ body {
 	justify-content: center;
 	align-items: center;
 	margin-bottom: 32px;
+}
+
+@-webkit-keyframes pop-in {
+0% {-webkit-transform: scale(0); }
+100% {-webkit-transform: scale(1); }
+}
+@-moz-keyframes pop-in {
+0% {-moz-transform: scale(0); }
+100% {-moz-transform: scale(1); }
+}
+@keyframes pop-in {
+0% {transform: scale(0); }
+100% {transform: scale(1); }
+}
+
+#finished-icon {
+	position: absolute;
+	top: -5%;
+	left: 95%;
+	z-index: 7;
+	height: 10vmin;
+	width: 10vmin;
+	-webkit-animation:pop-in 0.5s;
+	-moz-animation:pop-in 0.5s;
+	-ms-animation:pop-in 0.5s;
 }
 
 .cell {
@@ -262,6 +288,10 @@ body {
     border-radius: 3px;
     margin-top: 14px;
     cursor: pointer;
+}
+
+.su-keyboard__number.no_digits_left {
+	fill: #959595;	
 }
 
 .su-keyboard__delete {

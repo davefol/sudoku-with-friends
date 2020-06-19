@@ -32,6 +32,9 @@ var NORMAL_MODE = 0;
 var CANDIDATE_MODE = 1;
 var MODE = NORMAL_MODE;
 
+var TIMER;
+var GAME_OVER = false;
+
 let INTERACTIONS = [
 ];
 
@@ -210,6 +213,7 @@ Cell.prototype.element = function() {
 function Grid(board) {
 	this.cells = [];
 	this.dirty_cells = [];
+	this.digits_left = [0, 9, 9, 9, 9, 9, 9, 9, 9, 9];
 	for (let x = 0; x < 9; x++) {
 		this.cells.push([]);
 		for (let y = 0; y < 9; y++) {
@@ -217,6 +221,8 @@ function Grid(board) {
 			cell.candidates = board.cells[x][y].candidates;
 			cell.prefilled = board.cells[x][y].prefilled;
 			cell.digit = board.cells[x][y].digit;
+			this.digits_left[cell.digit] -= 1;
+			this.digits_left[0] += 1;
 			this.cells[x].push(cell);
 			this.dirty_cells.push(cell);
 		}
@@ -243,6 +249,21 @@ function Grid(board) {
 	}
 
 	this.selected_cell = this.cells[0][0];
+
+	for (let i = 1; i < 10; i++) {
+		if (this.digits_left[i] < 1) {
+			document.getElementById(`keyboard-${i}`).classList.add("no_digits_left");
+		}
+	}
+
+	if (!GAME_OVER && this.digits_left[0] == 81 && !this.conflicts_present()) {
+		clearInterval(TIMER);
+		let finished_checkmark = document.createElement("img");
+		finished_checkmark.src = "/green-checkmark.svg";
+		finished_checkmark.id = "finished-icon";
+		document.getElementById("board").appendChild(finished_checkmark);
+		GAME_OVER = true;
+	}
 } 
 
 Grid.prototype.render = function() {
@@ -297,7 +318,17 @@ Grid.prototype.set_candidate = function(digit) {
 	};
 	this.update_cell(data);
 	socket.emit('update cell', data);
+}
 
+Grid.prototype.conflicts_present = function() {
+	for (let row of this.cells) {
+		for (let cell of row) {
+			if (cell.conflicts.length > 0) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 // Called whenever a cell changes, no matter where the change originated from.
@@ -307,6 +338,18 @@ Grid.prototype.update_cell = function(data) {
 
 	if (typeof data.digit != 'undefined') {
 		if (cell.digit != data.digit) {
+			this.digits_left[data.digit] -= 1;
+			this.digits_left[cell.digit] += 1;
+			if (this.digits_left[data.digit] < 1 && data.digit != 0) {
+				document.getElementById(`keyboard-${data.digit}`).classList.add("no_digits_left");
+			} else if (data.digit != 0) {
+				document.getElementById(`keyboard-${data.digit}`).classList.remove("no_digits_left");
+			}
+			if (this.digits_left[cell.digit] < 1 && cell.digit !=0) {
+				document.getElementById(`keyboard-${cell.digit}`).classList.add("no_digits_left");
+			} else if (cell.digit != 0) {
+				document.getElementById(`keyboard-${cell.digit}`).classList.remove("no_digits_left");
+			}
 			cell.digit = data.digit;
 			document.getElementById(cell.svg_id()).innerHTML = SVG_NUMS[cell.digit];
 			if (cell.digit == 0) {
@@ -327,6 +370,15 @@ Grid.prototype.update_cell = function(data) {
 						}
 					}
 				}
+			}
+
+			if (!GAME_OVER && this.digits_left[0] == 81 && !this.conflicts_present()) {
+				clearInterval(TIMER);
+				let finished_checkmark = document.createElement("img");
+				finished_checkmark.src = "/green-checkmark.svg";
+				finished_checkmark.id = "finished-icon";
+				document.getElementById("board").appendChild(finished_checkmark);
+				GAME_OVER = true;
 			}
 
 
@@ -359,29 +411,50 @@ document.getElementById("join_room").addEventListener('click', function() {
 	socket.emit("join room", document.getElementById("room_id_input").value);
 });
 
+if (window.location.pathname.startsWith("/room/")) {
+	console.log(window.location.pathname.slice(6));
+	socket.emit("join room", window.location.pathname.slice(6));
+}
+
 socket.on('set up board', board => {
-	let el = document.getElementById("lobby").lastChild;
-	while (el) {
-		el.remove();
-		el = document.getElementById("lobby").lastChild;
+	if (window.location.pathname.slice(6) != board.id.toString()) {
+		window.history.pushState({}, null, `/room/${board.id}`);
 	}
-	document.getElementById("lobby-container").style.display = "none";
-	let room_id = document.createElement("p");
-	room_id.innerHTML = "Room ID: " + board.id;
-	document.getElementById("game-id").appendChild( room_id);
 
-	document.getElementById("game").style.display = "flex";
+	// Transition
+	document.body.style.opacity = 0;
+	window.setTimeout( function() {
+		let el = document.getElementById("lobby").lastChild;
+		while (el) {
+			el.remove();
+			el = document.getElementById("lobby").lastChild;
+		}
+		document.getElementById("lobby-container").style.display = "none";
+		let room_id = document.createElement("p");
+		room_id.innerHTML = "Room ID: " + board.id;
+		document.getElementById("game-id").appendChild( room_id);
 
-	document.getElementById("timer").style.displaye = "block";
+		document.getElementById("game").style.display = "flex";
+		document.getElementById("timer").style.display = "block";
+		let startTime = Date.now();
+		let timeStr = "";
+		if (!GAME_OVER) {
+			TIMER = setInterval(function() {
+				let delta = Date.now() - startTime; // milliseconds elapsed since start
+				let minutes = (delta / 1000)  / 60;
+				let seconds = (delta/ 1000) % 60;
+				let newTimeStr = Math.floor(minutes).toString().padStart(2, "0")+':'+Math.floor(seconds).toString().padStart(2, "0");
+				if (newTimeStr != timeStr) {
+					timeStr = newTimeStr;
+					document.getElementById("timer-value").innerText = timeStr;
+				}
+			}, 100);
+		}
+		document.body.style.opacity = 1;
 
-	let startTime = Date.now();
-	setInterval(function() {
-		let delta = Date.now() - startTime; // milliseconds elapsed since start
-		let minutes = (delta / 1000)  / 60;
-		let seconds = (delta/ 1000) % 60;
-		document.getElementById("timer-value").innerText = Math.floor(minutes).toString().padStart(2, "0")+':'+Math.floor(seconds).toString().padStart(2, "0");
+	}, 650);
+	
 
-	}, 100);
 
 	let grid = new Grid(board);
 	grid.render();
@@ -408,6 +481,22 @@ socket.on('set up board', board => {
 			f.call(grid, 9);
 		else if (event.code == "Backspace" || event.code == "Delete")
 			grid.set_digit(0);
+		else if (event.code == "ArrowLeft") {
+			grid.select_cell(grid.cells[grid.selected_cell.x][(((grid.selected_cell.y - 1) % 9) + 9) % 9]);
+			event.preventDefault();
+		}
+		else if (event.code == "ArrowRight") {
+			grid.select_cell(grid.cells[grid.selected_cell.x][(grid.selected_cell.y + 1) % 9]);
+			event.preventDefault();
+		}
+		else if (event.code == "ArrowDown") {
+			grid.select_cell(grid.cells[(grid.selected_cell.x + 1) % 9][grid.selected_cell.y]);
+			event.preventDefault();
+		}
+		else if (event.code == "ArrowUp") {
+			grid.select_cell(grid.cells[(((grid.selected_cell.x - 1) % 9) + 9) % 9][grid.selected_cell.y]);
+			event.preventDefault();
+		}
 	});
 
 	

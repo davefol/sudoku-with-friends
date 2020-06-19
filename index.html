@@ -31,13 +31,14 @@
 				<div class="wrap-instructions"><p>
 						To start a puzzle, paste a sudoku in .sdk format into the box underneath "Create New Room" then press the button.
 						The room ID will be in the top right. Your friends can paste that into the
-						"Join Room" box to collaborate on the puzzle with you. Need a puzzle? Try the <a href="https://chrome.google.com/webstore/detail/new-york-times-sudoku-imp/ekhmjkmibekgoiodgnpbecpchpppjkhn">New York Times Sudoku Importer</a> chrome extension. 
+						"Join Room" box to collaborate on the puzzle with you. Need a puzzle? Try my <a href="https://chrome.google.com/webstore/detail/new-york-times-sudoku-imp/ekhmjkmibekgoiodgnpbecpchpppjkhn">New York Times Sudoku Importer</a> chrome extension. 
+						Need a feature? Email me at dof5 (at) cornell (dot) edu or <a href="https://github.com/davefol/sudoku-with-friends/issues<">submit an issue</a>.
 					</p></div>
 			</div>
 		</div>
 
-		<div id="game-id"></div>
-		<div id="timer"><p id="timer-value"></p></div>
+		<div id="game-id">&nbsp;</div>
+		<div id="timer"><p id="timer-value">00:00</p></div>
 
     <div id="game">
       <div id="empty-spacer"></div>
@@ -114,7 +115,7 @@
         </div>
       </div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="./sudoku.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="/sudoku.js"></script>
   </body>
 </html>
