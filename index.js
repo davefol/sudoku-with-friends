@@ -41,8 +41,8 @@ function Board(sdk_str, id) {
 		return;
 	}
 	for (let i = 0; i < 81; i++) {
-		let y = Math.floor(i / 9);
-		let x = Math.floor(i % 9);
+		let x = Math.floor(i / 9);
+		let y = Math.floor(i % 9);
 		let digit = sanitized.charAt(i);
 		if (digit == '.') {
 			this.cells[x][y].digit = 0;

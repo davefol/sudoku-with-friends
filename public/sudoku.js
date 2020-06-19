@@ -28,6 +28,10 @@ var SVG_CND_NUMS = [
 	`<path class="su-number" d="M131.712 100.681C131.712 71.8312 118.661 55.8952 97.7793 55.8952C80.1947 55.8952 65.083 69.4957 65.083 88.4541C65.083 105.077 77.035 117.578 95.5812 117.578C107.121 117.578 115.364 112.221 123.057 105.352C121.958 127.47 112.891 144.093 95.0317 144.093C83.4918 144.093 77.3098 136.399 74.15 130.08L66.182 133.789C70.5782 143.131 79.6452 151.511 95.1691 151.511C116.6 151.511 131.712 132.415 131.712 100.681ZM123.057 97.2463C117.425 102.742 108.77 110.16 95.7186 110.16C83.3545 110.16 74.2874 101.23 74.2874 88.3167C74.2874 73.6171 83.7666 63.3137 97.9167 63.3137C110.968 63.3137 122.233 73.8919 123.057 97.2463Z"></path>`,
 ];
 
+var NORMAL_MODE = 0;
+var CANDIDATE_MODE = 1;
+var MODE = NORMAL_MODE;
+
 let INTERACTIONS = [
 ];
 
@@ -282,6 +286,20 @@ Grid.prototype.set_digit = function(digit) {
 	}
 }
 
+Grid.prototype.set_candidate = function(digit) {
+	let data = {
+		x: this.selected_cell.x,
+		y: this.selected_cell.y,
+		modify_candidate: {
+			candidate: digit,
+			remove: this.selected_cell.candidates.includes(digit),
+		}
+	};
+	this.update_cell(data);
+	socket.emit('update cell', data);
+
+}
+
 // Called whenever a cell changes, no matter where the change originated from.
 // data only needs to contain the x, y, and changed properties of the cell.
 Grid.prototype.update_cell = function(data) {
@@ -347,37 +365,75 @@ socket.on('set up board', board => {
 		el.remove();
 		el = document.getElementById("lobby").lastChild;
 	}
+	document.getElementById("lobby-container").style.display = "none";
 	let room_id = document.createElement("p");
 	room_id.innerHTML = "Room ID: " + board.id;
-	document.getElementById("lobby").appendChild( room_id);
+	document.getElementById("game-id").appendChild( room_id);
 
-	document.getElementById("board").style.visibility = "visible";
+	document.getElementById("game").style.display = "flex";
 
 	let grid = new Grid(board);
 	grid.render();
 
 	document.addEventListener('keydown', function(event) {
+		let f = MODE == NORMAL_MODE ? grid.set_digit : grid.set_candidate;
 		if (event.code == "Digit1") 
-			grid.set_digit(1);
+			f.call(grid, 1);
 		else if (event.code == "Digit2")
-			grid.set_digit(2);
+			f.call(grid, 2);
 		else if (event.code == "Digit3")
-			grid.set_digit(3);
+			f.call(grid, 3);
 		else if (event.code == "Digit4")
-			grid.set_digit(4);
+			f.call(grid, 4);
 		else if (event.code == "Digit5")
-			grid.set_digit(5);
+			f.call(grid, 5);
 		else if (event.code == "Digit6")
-			grid.set_digit(6);
+			f.call(grid, 6);
 		else if (event.code == "Digit7")
-			grid.set_digit(7);
+			f.call(grid, 7);
 		else if (event.code == "Digit8")
-			grid.set_digit(8);
+			f.call(grid, 8);
 		else if (event.code == "Digit9")
-			grid.set_digit(9);
+			f.call(grid, 9);
 		else if (event.code == "Backspace" || event.code == "Delete")
 			grid.set_digit(0);
 	});
+
+	
+	for (let pad_digit = 1; pad_digit < 10; pad_digit++) {
+		document.getElementById(`keyboard-${pad_digit}`).addEventListener('click', function() {
+			if (MODE == NORMAL_MODE) {
+				grid.set_digit(pad_digit);
+			} else {
+				grid.set_candidate(pad_digit);
+			}
+		});
+	}
+
+	document.getElementById(`keyboard-delete`).addEventListener('click', function() {
+		grid.set_digit(0);
+	});
+	
+	document.getElementById(`keyboard-normal`).addEventListener('click', function() {
+		MODE = NORMAL_MODE;
+		document.getElementById('keyboard-normal').classList.add("normalMode");
+		document.getElementById('keyboard-candidate').classList.remove("candidateMode");
+		let key_pad_svgs = document.querySelectorAll(".su-keyboard__svg");
+		for (let i = 0; i < key_pad_svgs.length; i++) {
+			key_pad_svgs[i].classList.remove("keypad-candidate");
+		}
+	});
+	document.getElementById(`keyboard-candidate`).addEventListener('click', function() {
+		MODE = CANDIDATE_MODE;
+		document.getElementById('keyboard-normal').classList.remove("normalMode");
+		document.getElementById('keyboard-candidate').classList.add("candidateMode");
+		let key_pad_svgs = document.querySelectorAll(".su-keyboard__svg");
+		for (let i = 0; i < key_pad_svgs.length; i++) {
+			key_pad_svgs[i].classList.add("keypad-candidate");
+		}
+	});
+
+	
 
 	socket.on('update cell', data => {
 		grid.update_cell(data);

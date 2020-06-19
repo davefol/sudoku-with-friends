@@ -1,3 +1,24 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+body {
+	background: #e6e6e6;
+}
+
+#game {
+	display: none;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 32px;
+}
+
 .cell {
 	background: #fff;
 	outline: 1px solid #959595;
@@ -25,8 +46,6 @@
 	background: #959595;
 	width: 92vmin;
 	height: 92vmin;
-	margin: auto;
-	visibility: hidden;
 	padding: 1px;
 }
 .board_frame {
@@ -71,37 +90,117 @@
 	fill: #000;
 }
 
+#game-id {
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+	padding: 16px;
+}
+
+#lobby-container {
+	width: 100%;
+	min-height: 100vh;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	padding: 15px;
+}
+
 #lobby {
 	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+	width: 920px;
+	background: #fff;
+	border-radius: 10px;
+	overflow: hidden;
+	padding: 62px 55px 90px 55px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+@media (max-width: 576px) {
+	#lobby {
+	    padding: 62px 15px 90px 15px;
+	}
+}
+
+.wrap-header {
+	width: 100%;
+	padding: 32px;
+}
+
+.wrap-header h1 {
+	text-align: center;
 }
 
 .new-room-container {
-	margin: 8px;
-	float: left;
 }
 
 #create_new_room {
 	display: block;	
 	margin-bottom: 8px;
 	width: 100%;
+	height: 80px;
+	font-size: large;
+	outline: none;
+	border-radius: 13px;
+	border: none;
+	background: #e6e6e6;
 	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
 
+#create_new_room:hover, #join_room:hover {
+	cursor: pointer;
+}
+
 .join-room-container {
-	margin: 8px;
-	float: left;
 }
 
 #room_id_input {
 	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+	font-size: x-large;
+	padding: 24px;
+	outline: none;
+	border: none;
+	width: 130px;
+	height: 207px;
+}
+
+.wrap-input-id {
+	border: 1px solid #e6e6e6;
+	border-radius: 13px;
+	padding: 10px 30px 9px 30px;
+	margin-bottom: 20px;
 }
 
 #join_room {
+	display: block;	
+	margin-bottom: 8px;
+	width: 100%;
+	height: 80px;
+	font-size: large;
+	outline: none;
+	border-radius: 13px;
+	border: none;
+	background: #e6e6e6;
 	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
 
 #sdk_input {
+	font-size: x-large;
 	padding: 24px;
+	outline: none;
+	border: none;
+}
+
+.wrap-sdk-input {
+	border: 1px solid #e6e6e6;
+	border-radius: 13px;
+	padding: 10px 30px 9px 30px;
+	margin-bottom: 20px;
 }
 
 #cell-0-2, #cell-0-5,
@@ -134,4 +233,227 @@
 	background-color: #ff4b56;
 	border-radius: 50%;
 	visibility: hidden;
+}
+
+.su-keyboard__number {
+	fill: #000;
+	width: 70px;
+	height: 70px;
+}
+
+.su-keyboard__delete, .su-keyboard__number {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #959595;
+    border-radius: 3px;
+    margin-top: 14px;
+    cursor: pointer;
+}
+
+.su-keyboard__delete {
+    width: 100%;
+    height: 48px;
+    background-repeat: no-repeat;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjc4IDguNzA0TDE3LjkzNiAyLjYyTDE1LjQxNiAwLjEzNTk5OEw5LjI2IDYuMjU2TDMuMTA0IDAuMTM1OTk4TDAuNTg0IDIuNjJMNi43NCA4LjcwNEwwLjU4NCAxNC44OTZMMy4xMDQgMTcuNDE2TDkuMjYgMTEuMjk2TDE1LjQxNiAxNy40MTZMMTcuOTM2IDE0Ljg5NkwxMS43OCA4LjcwNFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=);
+    background-position: center;
+}
+
+.su-keyboard__container {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-between;
+	align-content: space-between;
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+.su-keyboard__svg-container {
+	height: 70px;
+}
+
+
+.su-app__control {
+    margin-left: 40px;
+    width: 100%;
+    max-width: 240px;
+}
+
+
+#empty-spacer {
+	width: 100%;
+	max-width: 240px;
+	margin-right: 40px;
+}
+
+.su-keyboard__mode.candidateMode, .su-keyboard__mode.normalMode {
+    background-color: #000;
+    color: #fff;
+    border: none;
+}
+
+.su-keyboard__mode.normal {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-right: none;
+}
+
+.su-keyboard__mode.candidate {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-left: none;
+}
+
+.su-keyboard__mode {
+    background-color: #fff;
+    color: #ccc;
+    font-size: 14px;
+    width: 50%;
+    height: 38px;
+    text-align: center;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.su-keyboard__auto {
+    font-size: 16px;
+    margin-top: 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.su-keyboard__checkbox {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    margin-right: 5px;
+    position: relative;
+}
+
+.su-keyboard__svg.keypad-candidate {
+    height: 33.33333%;
+    width: 33.33333%;
+    margin: 0;
+    -webkit-transform: scale(1.2);
+    transform: scale(1.2);
+}
+
+.su-keyboard__svg.keypad-candidate.col-1 {
+    left: 33.33333%;
+    position: relative;
+}
+
+.su-keyboard__svg.keypad-candidate.col-2 {
+    left: 66.66666%;
+    position: relative;
+}
+
+.su-keyboard__svg.keypad-candidate.row-1 {
+    top: 33.33333%;
+    position: relative;
+}
+
+.su-keyboard__svg.keypad-candidate.row-2 {
+    top: 66.66666%;
+    position: relative;
+}
+
+.su-keyboard__delete:active, .su-keyboard__number:active {
+    background-color: #fff;
+    opacity: 0.5;
+}
+
+
+
+
+@media (max-width: 1435px) {
+	#empty-spacer {
+		display: none;
+	}
+	#board {
+		margin-bottom: 2vmin;
+	}
+	.su-app__control {
+	    max-width: 850px;
+	    margin-left: 0;
+	    margin-bottom: 5vmin;
+	    width: 100%;
+	}
+
+	.su-keyboard {
+	    width: 90%;
+	    max-width: none;
+	    margin: auto;
+	    margin-top: 20px;
+	}
+
+	.su-keyboard__split
+	{
+	    margin: auto;
+	    width: 60%;
+	    max-width: 300px;
+	    margin-bottom: 10px;
+	}
+	.su-keyboard__container {
+	    max-width: 450px;
+	    margin: auto;
+	}
+
+	.su-keyboard__svg-container {
+		height: 42px;
+	}
+
+	.su-keyboard__mode {
+	    font-size: 12px;
+	    height: 34px;
+	}
+	.su-keyboard__number, .su-keyboard__delete {
+	    width: calc(100% / 5 - 2%);
+	    max-height: 42px;
+	}
+	.su-keyboard__delete {
+	    background-size: 15px;
+	}
+	.su-keyboard__delete {
+	    width: calc(100% / 5 - 2%);
+	    max-height: 42px;
+	}
+	.su-keyboard__auto {
+	    margin: auto;
+	    margin-top: 10px;
+	    font-size: 14px;
+	}
+	.su-keyboard__svg {
+	    width: 100%;
+	    height: 100%;
+	}
+
+	.su-keyboard__svg.keypad-candidate.col-1 {
+	    left: 0;
+	}
+
+	.su-keyboard__svg.keypad-candidate.col-2 {
+	    left: 0;
+	}
+
+	.su-keyboard__svg.keypad-candidate.row-1 {
+	    top: 0;
+	}
+
+	.su-keyboard__svg.keypad-candidate.row-2 {
+	    top: 0;
+	}
+
+	.su-keyboard__svg.keypad-candidate {
+	    height: 75%;
+	    width: 75%;
+	    -webkit-transform: scale(1);
+	    transform: scale(1);
+	    margin-left: 12.5%;
+	    margin-right: 12.5%;
+	    margin-top: 6%;
+	}
 }
