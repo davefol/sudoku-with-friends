@@ -23,10 +23,21 @@ app.get('/room/:room_id', (req, res) => {
 
 
 var ROOMS = new Map();
+var PLAYER_ROOMS = new Map();
+var PLAYER_COLORS = ["#e74c3c", "#f1c40f", "#9b59b6", "#3498db", "#1abc9c"];
 
+function Player(id, color, room) {
+	this.id = id;
+	this.color = color;
+	this.currently_selected = {x: 0, y: 0};
+	this.room = room;
+	PLAYER_ROOMS.set(id, room);
+}
 
 function Board(sdk_str, id) {
 	this.id = id;
+	this.players = [];
+	this.available_colors = Array.from(PLAYER_COLORS);
 	this.cells = [];
 	for (let x = 0; x < 9; x++) {
 		this.cells.push([]);
@@ -56,10 +67,31 @@ function Board(sdk_str, id) {
 			this.cells[x][y].prefilled = true;
 		}
 	}
+}
+
+Board.prototype.addPlayer = function(id) {
+	if (this.players.length < 5) {
+		this.players.push(new Player(id, this.available_colors.pop(), this.id));
+		return true;
+	} else {
+		return false;
+	}
 
 }
 
+Board.prototype.removePlayer = function(id) {
+	console.log("removing player")
+	for (let i = 0; i < this.players.length; i++) {
+		if (this.players[i].id == id) {
+			this.available_colors.push(this.players[i].color);
+			this.players.splice(i, 1);
+			break;
+		}
+	}
+}
+
 io.on('connection', (socket) => {
+	socket.emit("your id is", socket.id);
 	socket.on('create new room', sdk => {
 		Object.keys(socket.rooms).forEach(room => {
 			if (room != socket.id) {
@@ -69,6 +101,7 @@ io.on('connection', (socket) => {
 		let id = crypto.randomBytes(20).toString('hex');
 		socket.join(id);
 		let board = new Board(sdk, id);
+		board.addPlayer(socket.id);
 		if (board.cells) {
 			ROOMS.set(id, board);
 			socket.emit('set up board', ROOMS.get(id));
@@ -78,14 +111,22 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('join room', id => {
+		if (PLAYER_ROOMS.get(socket.id)) {
+			ROOMS.get(PLAYER_ROOMS.get(socket.id)).removePlayer(socket.id);
+			PLAYER_ROOMS.delete(socket.id);
+		}
 		Object.keys(socket.rooms).forEach(room => {
 			if (room != socket.id) {
 				socket.leave(room);
 			}
 		});
 		if (ROOMS.has(id)) {
-			socket.join(id);
-			socket.emit('set up board', ROOMS.get(id));
+			if (ROOMS.get(id).addPlayer(socket.id)) {
+				socket.join(id);
+				socket.emit('set up board', ROOMS.get(id));
+			} else {
+				socket.emit('room is full');
+			}
 		} else {
 			socket.emit('room not found');
 		}
@@ -124,19 +165,35 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	socket.on('disconnect', function() {
-		let room_id = '';
-		Object.keys(socket.rooms).forEach(room => {
-			if (room != socket.id && typeof room == 'string') {
-				room_id = room;
+	socket.on('show selected', (data) => {
+		let room_id = PLAYER_ROOMS.get(socket.id);
+		if (room_id) {
+			let color = '';
+			for (let player of ROOMS.get(room_id).players) {
+				if (player.id == socket.id) {
+					color = player.color;
+					player.currently_selected = data.pos;
+				}
 			}
-		});
+			socket.broadcast.to(room_id).emit('show selected', {
+				pos: data.pos,
+				color: color
+			});
+		}
+	});
 
-		if (io.sockets.clients(room_id).length == 0) {
-			setTimeout(function() {
-				if (io.sockets.clients(room_id).length == 0)
-					ROOMS.delete(room_id);
-			}, 60 * 5);
+	socket.on('disconnect', function() {
+		let room_id = PLAYER_ROOMS.get(socket.id);
+		if (room_id) {
+			ROOMS.get(room_id).removePlayer(socket.id);
+			PLAYER_ROOMS.delete(socket.id);
+
+			if (ROOMS.get(room_id).players.length == 0) {
+				setTimeout(function() {
+					if (ROOMS.get(room_id).players.length == 0)
+						ROOMS.delete(room_id);
+				}, 60 * 5);
+			}
 		}
 	});
 });

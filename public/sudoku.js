@@ -35,6 +35,8 @@ var MODE = NORMAL_MODE;
 var TIMER;
 var GAME_OVER = false;
 
+var PLAYER_ID = '';
+
 let INTERACTIONS = [
 ];
 
@@ -80,6 +82,7 @@ function Cell(x, y, parent) {
 	this.y = y;
 	this.candidates = [];
 	this.conflicts = [];
+	this.other_players_selected = [];
 }
 
 Cell.prototype.add_conflict = function(cell) {
@@ -147,6 +150,10 @@ Cell.prototype.element = function() {
 	if (this.prefilled) 
 		cell.classList.add("prefilled");
 
+	let other_select = document.createElement("div");
+	other_select.classList.add("other-select");
+	other_select.id = this.id() + "-other-selected";
+	cell.appendChild(other_select);
 	let conflict = document.createElement("div");
 	conflict.classList.add("conflict-icon");
 	cell.appendChild(conflict);
@@ -214,6 +221,7 @@ function Grid(board) {
 	this.cells = [];
 	this.dirty_cells = [];
 	this.digits_left = [0, 9, 9, 9, 9, 9, 9, 9, 9, 9];
+	this.other_selected = new Map();
 	for (let x = 0; x < 9; x++) {
 		this.cells.push([]);
 		for (let y = 0; y < 9; y++) {
@@ -291,6 +299,10 @@ Grid.prototype.select_cell = function(cell) {
 		this.selected_cell = cell;
 		cell.selected = true;
 	}
+
+	socket.emit('show selected', {
+		pos: {x: this.selected_cell.x, y: this.selected_cell.y}
+	});
 }
 
 // Called when the user enters a digit for a cell. 
@@ -403,6 +415,27 @@ Grid.prototype.update_cell = function(data) {
 	
 }
 
+Grid.prototype.show_selected = function(data) {
+	let currently_selected = this.other_selected.get(data.color);
+	if (currently_selected) {
+		for (let i = 0; i < currently_selected.other_players_selected.length; i++) {
+			if (currently_selected.other_players_selected[i] == data.color) {
+				currently_selected.other_players_selected.splice(i, 1);
+			}
+		}
+		if (currently_selected.other_players_selected.length == 0) {
+			document.getElementById(currently_selected.id()).classList.remove("other-selected");
+		}
+	}
+
+	this.other_selected.set(data.color, this.cells[data.pos.x][data.pos.y]);
+	currently_selected = this.other_selected.get(data.color);
+	currently_selected.other_players_selected.push(data.color);
+	document.getElementById(this.other_selected.get(data.color).id()).classList.add("other-selected");
+	document.getElementById(currently_selected.id() + '-other-selected').style.outline = `2px dashed ${data.color}8e`;
+
+}
+
 document.getElementById("create_new_room").addEventListener('click', function() {
 	socket.emit("create new room", document.getElementById("sdk_input").value);
 });
@@ -458,6 +491,17 @@ socket.on('set up board', board => {
 
 	let grid = new Grid(board);
 	grid.render();
+
+	console.log(board);
+	for (let player of board.players) {
+		if (player.id != PLAYER_ID) {
+			console.log(player);
+			grid.show_selected({
+				pos: player.currently_selected,
+				color: player.color
+			});
+		}
+	}
 
 	document.addEventListener('keydown', function(event) {
 		let f = MODE == NORMAL_MODE ? grid.set_digit : grid.set_candidate;
@@ -536,6 +580,10 @@ socket.on('set up board', board => {
 	socket.on('update cell', data => {
 		grid.update_cell(data);
 	});
+
+	socket.on('show selected', data => {
+		grid.show_selected(data);
+	});
 });
 
 socket.on('room not found', function() {
@@ -548,6 +596,10 @@ socket.on("room no longer available", function() {
 
 socket.on('cant parse sdk', function() {
 	alert("Cannot parse .sdk text into sudoku board.");
+});
+
+socket.on("your id is", function(id) {
+	PLAYER_ID = id;
 });
 
 

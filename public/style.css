@@ -66,6 +66,21 @@ body {
 	background: #e6c500;
 }
 
+.cell .other-select {
+	visibility: hidden;
+}
+
+.cell.other-selected .other-select {
+	visibility: visible;
+}
+
+.other-select {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	outline-offset: -8px;
+}
+
 #board {
 	top: 5px;
 	position: relative;
