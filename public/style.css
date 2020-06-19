@@ -109,13 +109,22 @@ body {
 	padding: 15px;
 }
 
+#timer {
+	width: 100%;
+	margin-bottom: 8px;
+}
+#timer-value {
+	text-align: center;
+	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
 #lobby {
 	font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 	width: 920px;
 	background: #fff;
 	border-radius: 10px;
 	overflow: hidden;
-	padding: 62px 55px 90px 55px;
+	padding: 55px;
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-around;
@@ -130,6 +139,11 @@ body {
 .wrap-header {
 	width: 100%;
 	padding: 32px;
+}
+
+.wrap-instructions {
+	width: 100%;
+	margin-top: 16px;
 }
 
 .wrap-header h1 {

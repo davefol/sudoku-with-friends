@@ -372,6 +372,17 @@ socket.on('set up board', board => {
 
 	document.getElementById("game").style.display = "flex";
 
+	document.getElementById("timer").style.displaye = "block";
+
+	let startTime = Date.now();
+	setInterval(function() {
+		let delta = Date.now() - startTime; // milliseconds elapsed since start
+		let minutes = (delta / 1000)  / 60;
+		let seconds = (delta/ 1000) % 60;
+		document.getElementById("timer-value").innerText = Math.floor(minutes).toString().padStart(2, "0")+':'+Math.floor(seconds).toString().padStart(2, "0");
+
+	}, 100);
+
 	let grid = new Grid(board);
 	grid.render();
 
@@ -432,8 +443,6 @@ socket.on('set up board', board => {
 			key_pad_svgs[i].classList.add("keypad-candidate");
 		}
 	});
-
-	
 
 	socket.on('update cell', data => {
 		grid.update_cell(data);
