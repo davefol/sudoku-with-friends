@@ -153,6 +153,7 @@ body {
 #timer {
 	width: 100%;
 	margin-bottom: 8px;
+	display: none;
 }
 #timer-value {
 	text-align: center;
